@@ -308,7 +308,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 
 			// Only show uninstalled blocks.
 			if ( empty( $installed_plugins ) ) {
-				$result[] = self::parse_block_metadata( $plugin );
+				$result[] = self::prepare_item_for_response( $plugin, $request );
 			}
 		}
 
@@ -343,53 +343,49 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 	}
 
 	/**
-	 * Parse block metadata for a block
+	 * Parse block metadata for a block, and prepare it for an API repsonse.
 	 *
 	 * @since 6.5.0
 	 *
 	 * @param WP_Object $plugin The plugin metadata.
+	 * @param WP_REST_Request $request Request object.
 	 * @return WP_Error|WP_REST_Response Response object on success, or WP_Error object on failure.
 	 */
-	private static function parse_block_metadata( $plugin ) {
-		$block = new stdClass();
+	private static function prepare_item_for_repsonse( $plugin, $request ) {
 
 		// There might be multiple blocks in a plugin. Only the first block is mapped.
 		$block_data   = reset( $plugin['blocks'] );
-		$block->name  = $block_data['name'];
-		$block->title = $block_data['title'];
-		if ( ! $block->title ) {
-			$block->title = $plugin['name'];
-		}
 
-		// Plugin's description, not description in block.json.
-		$block->description = wp_trim_words( wp_strip_all_tags( $plugin['description'] ), 30, '...' );
-
-		$block->id                  = $plugin['slug'];
-		$block->rating              = $plugin['rating'] / 20;
-		$block->rating_count        = intval( $plugin['num_ratings'] );
-		$block->active_installs     = $plugin['active_installs'];
-		$block->author_block_rating = $plugin['author_block_rating'] / 20;
-		$block->author_block_count  = intval( $plugin['author_block_count'] );
-
-		// Plugin's author, not author in block.json.
-		$block->author = wp_strip_all_tags( $plugin['author'] );
-
-		// Plugin's icons or icon in block.json.
-		$block->icon = isset( $plugin['icons']['1x'] ) ? $plugin['icons']['1x'] : 'block-default';
-
-		$block->assets = array();
-		foreach ( $plugin['block_assets'] as $asset ) {
-			// TODO: Return from API, not client-set.
-			$block->assets[] = 'https://plugins.svn.wordpress.org/' . $plugin['slug'] . $asset;
-		}
-
-		$block->humanized_updated = sprintf(
-			/* translators: %s: Human-readable time difference. */
-			__( '%s ago', 'gutenberg' ),
-			human_time_diff( strtotime( $plugin['last_updated'] ), current_time( 'timestamp' ) )
+		// A data array containing the properties we'll return.
+		$block = array(
+			'name'                  => $block_data['name'],
+			'title'                 => ( $block_data['title'] ? $block_data['title'] : $plugin['name'] ),
+			'description'           => wp_trim_words( wp_strip_all_tags( $plugin['description'] ), 30, '...' ),
+			'id'                    => $plugin['slug'],
+			'rating'                => $plugin['rating'] / 20,
+			'rating_count'          => intval( $plugin['num_ratings'] ),
+			'active_installs'       => intval( $plugin['active_installs'] ),
+			'author_block_rating'   => $plugin['author_block_rating'] / 20,
+			'author_block_count'    => intval( $plugin['author_block_count'] ),
+			'author'                => wp_strip_all_tags( $plugin['author'] ),
+			'icon'                  => ( isset( $plugin['icons']['1x'] ) ? $plugin['icons']['1x'] : 'block-default' ),
+			'asssets'               => array(),
+			'humanized_updated'     => sprintf(
+				/* translators: %s: Human-readable time difference. */
+				__( '%s ago', 'gutenberg' ),
+				human_time_diff( strtotime( $plugin['last_updated'] ), current_time( 'timestamp' ) )
+			),
 		);
 
-		return $block;
+		foreach ( $plugin['block_assets'] as $asset ) {
+			// TODO: Return from API, not client-set.
+			$block[ 'assets' ][] = 'https://plugins.svn.wordpress.org/' . $plugin['slug'] . $asset;
+		}
+
+		$response = new WP_REST_Response();
+		$response->set_data( $block );
+
+		return $response;
 	}
 
 	/**
