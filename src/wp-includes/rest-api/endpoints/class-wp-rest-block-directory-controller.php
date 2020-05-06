@@ -360,7 +360,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 		$block = array(
 			'name'                  => $block_data['name'],
 			'title'                 => ( $block_data['title'] ? $block_data['title'] : $plugin['name'] ),
-			'description'           => wp_trim_words( wp_strip_all_tags( $plugin['description'] ), 30, '...' ),
+			'description'           => wp_trim_words( $plugin['description'], 30, '...' ),
 			'id'                    => $plugin['slug'],
 			'rating'                => $plugin['rating'] / 20,
 			'rating_count'          => intval( $plugin['num_ratings'] ),
