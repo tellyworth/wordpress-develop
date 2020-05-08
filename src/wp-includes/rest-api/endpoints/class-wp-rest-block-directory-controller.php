@@ -1,9 +1,8 @@
 <?php
 /**
  * Start: Include for phase 2
- * Block Directory REST API: WP_REST_Blocks_Controller class
+ * Block Directory REST API: WP_REST_Block_Directory_Controller class
  *
- * @package gutenberg
  * @since 6.5.0
  */
 
@@ -340,7 +339,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 			return true;
 		}
 
-		return new WP_Error( 'fs_unavailable', __( 'The filesystem is currently unavailable for installing blocks.', 'gutenberg' ) );
+		return new WP_Error( 'fs_unavailable', __( 'The filesystem is currently unavailable for installing blocks.' ) );
 	}
 
 	/**
@@ -373,7 +372,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 			'assets'                => array(),
 			'humanized_updated'     => sprintf(
 				/* translators: %s: Human-readable time difference. */
-				__( '%s ago', 'gutenberg' ),
+				__( '%s ago' ),
 				human_time_diff( strtotime( $plugin['last_updated'] ), current_time( 'timestamp' ) )
 			),
 		);
