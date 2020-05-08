@@ -75,7 +75,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_UnitTestCase {
 
 		$this->prevent_requests_to_host( 'api.wordpress.org' );
 
-		$result = $this->controller->get_items( $request );
+		$result = @ $this->controller->get_items( $request );
 		$this->assertWPError( $result );
 		$this->assertTrue( array_key_exists( 'plugins_api_failed', $result->errors ), 'Returns the correct error key' );
 
@@ -90,7 +90,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_UnitTestCase {
 
 		$this->prevent_requests_to_host( 'api.wordpress.org' );
 
-		$result = $this->controller->install_block( $request );
+		$result = @ $this->controller->install_block( $request );
 		$this->assertWPError( $result );
 		$this->assertTrue( array_key_exists( 'plugins_api_failed', $result->errors ), 'Returns the correct error key' );
 
