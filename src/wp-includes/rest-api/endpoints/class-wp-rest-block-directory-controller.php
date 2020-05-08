@@ -433,7 +433,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 				),
 				'active_installs'     => array(
 					'description'       => __( "The number sites that have activated this block." ),
-					'type'              => 'integer',
+					'type'              => 'string',
 					'context'           => array( 'view' ),
 				),
 				'author_block_rating' => array(
@@ -448,11 +448,11 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 				),
 				'author'              => array(
 					'description'       => __( "The WordPress.org username of the block author." ),
-					'type'              => 'integer',
+					'type'              => 'string',
 					'context'           => array( 'view' ),
 				),
 				'icon' => array(
-					'description'     => __( "The WordPress.org username of the block author." ),
+					'description'     => __( "The block icon." ),
 					'type'              => 'string',
 					'format'            => 'uri',
 					'context'           => array( 'view' ),
