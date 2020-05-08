@@ -308,7 +308,8 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 
 			// Only show uninstalled blocks.
 			if ( empty( $installed_plugins ) ) {
-				$result[] = self::prepare_item_for_response( $plugin, $request );
+				$data = $this->prepare_item_for_response( $plugin, $request );
+				$result[] = $this->prepare_response_for_collection( $data );
 			}
 		}
 
@@ -351,7 +352,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 * @return WP_Error|WP_REST_Response Response object on success, or WP_Error object on failure.
 	 */
-	private static function prepare_item_for_repsonse( $plugin, $request ) {
+	public function prepare_item_for_response( $plugin, $request ) {
 
 		// There might be multiple blocks in a plugin. Only the first block is mapped.
 		$block_data   = reset( $plugin['blocks'] );

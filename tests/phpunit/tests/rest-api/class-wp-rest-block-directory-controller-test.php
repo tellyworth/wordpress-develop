@@ -126,12 +126,12 @@ class WP_REST_Block_Directory_Controller_Test extends WP_UnitTestCase {
 		$this->assertGreaterThanOrEqual( 1, count( $data ) );
 		// Each result should be an object with important attributes set
 		foreach ( $data as $plugin ) {
-			$this->assertObjectHasAttribute( 'name', $plugin );
-			$this->assertObjectHasAttribute( 'title', $plugin );
-			$this->assertObjectHasAttribute( 'id', $plugin );
-			$this->assertObjectHasAttribute( 'author_block_rating', $plugin );
-			$this->assertObjectHasAttribute( 'assets', $plugin );
-			$this->assertObjectHasAttribute( 'humanized_updated', $plugin );
+			$this->assertArrayHasKey( 'name', $plugin );
+			$this->assertArrayHasKey( 'title', $plugin );
+			$this->assertArrayHasKey( 'id', $plugin );
+			$this->assertArrayHasKey( 'author_block_rating', $plugin );
+			$this->assertArrayHasKey( 'assets', $plugin );
+			$this->assertArrayHasKey( 'humanized_updated', $plugin );
 		}
 	}
 
