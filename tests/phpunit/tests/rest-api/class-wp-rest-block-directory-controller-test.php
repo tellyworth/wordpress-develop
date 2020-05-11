@@ -14,7 +14,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 		global $wp_rest_server;
 		$wp_rest_server = new \WP_REST_Server;
 		$this->server   = $wp_rest_server;
-		do_action( 'rest_api_init' );
+		do_action( 'rest_api_init', $this->server );
 
 		$this->controller = new WP_REST_Block_Directory_Controller();
 		$this->controller->register_routes();
