@@ -6,23 +6,22 @@
  * phpcs:disable
  */
 class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
-	protected $controller = null;
+	protected static $admin_id;
 
-	function setUp() {
-		parent::setUp();
+	public static function wpSetUpBeforeClass( $factory ) {
+		self::$admin_id  = $factory->user->create(
+			array(
+				'role'       => 'administrator',
+			)
+		);
+	}
 
-		global $wp_rest_server;
-		$wp_rest_server = new \WP_REST_Server;
-		$this->server   = $wp_rest_server;
-		do_action( 'rest_api_init', $this->server );
-
-		$this->controller = new WP_REST_Block_Directory_Controller();
-		$this->controller->register_routes();
-
+	public static function wpTearDownAfterClass() {
+		self::delete_user( self::$admin_id );
 	}
 
 	public function test_register_routes() {
-		$routes = $this->server->get_routes();
+		$routes = rest_get_server()->get_routes();
 
 		$this->assertArrayHasKey( '/wp/v2/block-directory/search', $routes );
 		$this->assertArrayHasKey( '/wp/v2/block-directory/install', $routes );
@@ -33,21 +32,24 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 	 * Tests that an error is returned if the block plugin slug is not provided
 	 */
 	function test_should_throw_no_slug_error() {
-		$request = new WP_REST_Request( 'POST', '/wp/v2/block-directory/install', [] );
+		wp_set_current_user( self::$admin_id );
 
-		$result = $this->controller->install_block( $request );
-		$this->assertWPError( $result, 'Returns an error when a slug isn\'t passed' );
-		$this->assertTrue( array_key_exists( 'plugins_api_failed', $result->errors ), 'Returns the correct error key' );
+		$request = new WP_REST_Request( 'POST', '/wp/v2/block-directory/install', [] );
+		$result = rest_get_server()->dispatch( $request );
+
+		$this->assertErrorResponse( 'rest_missing_callback_param', $result, 400 );
 	}
 
 	/**
 	 * Tests that the search endpoint does not return an error
 	 */
 	function test_simple_search() {
+		wp_set_current_user( self::$admin_id );
+
 		$request = new WP_REST_Request( 'GET', '/wp/v2/block-directory/search' );
 		$request->set_query_params( array( 'term' => 'foo' ) );
 
-		$result = $this->controller->get_items( $request );
+		$result = rest_get_server()->dispatch( $request );
 		$this->assertNotWPError( $result );
 		$this->assertEquals( 200, $result->status );
 	}
@@ -70,30 +72,30 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 	 * Tests that the search endpoint returns WP_Error when the server is unreachable.
 	 */
 	function test_search_unreachable() {
+		wp_set_current_user( self::$admin_id );
+
 		$request = new WP_REST_Request( 'GET', '/wp/v2/block-directory/search' );
 		$request->set_query_params( array( 'term' => 'foo' ) );
 
 		$this->prevent_requests_to_host( 'api.wordpress.org' );
 
-		$result = @ $this->controller->get_items( $request );
-		$this->assertWPError( $result );
-		$this->assertTrue( array_key_exists( 'plugins_api_failed', $result->errors ), 'Returns the correct error key' );
-
+		$response = @ rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'plugins_api_failed', $response, 500 );
 	}
 
 	/**
 	 * Tests that the install endpoint returns WP_Error when the server is unreachable.
 	 */
 	function test_install_unreachable() {
+		wp_set_current_user( self::$admin_id );
+
 		$request = new WP_REST_Request( 'POST', '/wp/v2/block-directory/install' );
 		$request->set_query_params( array( 'slug' => 'foo' ) );
 
 		$this->prevent_requests_to_host( 'api.wordpress.org' );
 
-		$result = @ $this->controller->install_block( $request );
-		$this->assertWPError( $result );
-		$this->assertTrue( array_key_exists( 'plugins_api_failed', $result->errors ), 'Returns the correct error key' );
-
+		$response = @ rest_get_server()->dispatch( $request );
+		$this->assertErrorResponse( 'plugins_api_failed', $response, 500 );
 	}
 
 	/**
@@ -112,8 +114,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 	 * Make sure a search with the right permissions returns something.
 	 */
 	function test_simple_search_with_perms() {
-		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
-		wp_set_current_user( $user_id );
+		wp_set_current_user( self::$admin_id );
 
 		// This will hit the live API. We're searching for `block` which should definitely return at least one result.
 		$request  = new WP_REST_Request( 'GET', '/wp/v2/block-directory/search' );
@@ -151,27 +152,22 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 	 * Make sure an install with permissions correctly handles an unknown slug.
 	 */
 	function test_simple_install_with_perms_bad_slug() {
-		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
-		wp_set_current_user( $user_id );
+		wp_set_current_user( self::$admin_id );
 
 		// This will hit the live API. 
 		$request  = new WP_REST_Request( 'POST', '/wp/v2/block-directory/install' );
 		$request->set_query_params( array( 'slug' => 'alex-says-this-block-definitely-doesnt-exist' ) );
 		$response = rest_get_server()->dispatch( $request );
-		$data     = $response->get_data();
 
 		// Is this an appropriate status?
-		$this->assertEquals( 500, $response->status );
-		$this->assertEquals( $data['code'], 'plugins_api_failed' );
-		$this->assertEquals( $data['message'], 'Plugin not found.' );
+		$this->assertErrorResponse( 'plugins_api_failed', $response, 500 );
 	}
 
 	/**
 	 * Make sure the search schema is available and correct.
 	 */
 	function test_search_schema() {
-		$user_id = $this->factory->user->create( array( 'role' => 'administrator' ) );
-		wp_set_current_user( $user_id );
+		wp_set_current_user( self::$admin_id );
 
 		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/block-directory/search' );
 		$request->set_query_params( array( 'term' => 'foo' ) );
