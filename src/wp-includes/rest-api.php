@@ -265,6 +265,10 @@ function create_initial_rest_routes() {
 	$controller = new WP_REST_Block_Renderer_Controller;
 	$controller->register_routes();
 
+	// Block Directory.
+	$controller = new WP_REST_Block_Directory_Controller;
+	$controller->register_routes();
+
 	// Settings.
 	$controller = new WP_REST_Settings_Controller;
 	$controller->register_routes();
