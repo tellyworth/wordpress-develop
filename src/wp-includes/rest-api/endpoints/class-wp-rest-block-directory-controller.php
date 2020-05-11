@@ -115,7 +115,8 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 		) {
 			return new WP_Error(
 				'rest_user_cannot_view',
-				__( 'Sorry, you are not allowed to install blocks.', 'gutenberg' )
+				__( 'Sorry, you are not allowed to install blocks.', 'gutenberg' ),
+				array( 'status' => rest_authorization_required_code() )
 			);
 		}
 
@@ -140,7 +141,8 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 		) {
 			return new WP_Error(
 				'rest_user_cannot_delete',
-				__( 'Sorry, you are not allowed to uninstall blocks.', 'gutenberg' )
+				__( 'Sorry, you are not allowed to uninstall blocks.', 'gutenberg' ),
+				array( 'status' => rest_authorization_required_code() )
 			);
 		}
 
@@ -181,6 +183,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 		);
 
 		if ( is_wp_error( $api ) ) {
+			$api->add_data( array( 'status' => 500 ) );
 			return $api;
 		}
 
@@ -206,9 +209,9 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 			global $wp_filesystem;
 			// Pass through the error from WP_Filesystem if one was raised.
 			if ( $wp_filesystem instanceof WP_Filesystem_Base && is_wp_error( $wp_filesystem->errors ) && $wp_filesystem->errors->has_errors() ) {
-				return new WP_Error( 'unable_to_connect_to_filesystem', esc_html( $wp_filesystem->errors->get_error_message() ) );
+				return new WP_Error( 'unable_to_connect_to_filesystem', esc_html( $wp_filesystem->errors->get_error_message() ), array( 'status' => 500 ) );
 			}
-			return new WP_Error( 'unable_to_connect_to_filesystem', __( 'Unable to connect to the filesystem. Please confirm your credentials.', 'gutenberg' ) );
+			return new WP_Error( 'unable_to_connect_to_filesystem', __( 'Unable to connect to the filesystem. Please confirm your credentials.', 'gutenberg' ), array( 'status' => 500 ) );
 		}
 
 		// Find the plugin to activate it.
@@ -240,7 +243,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 		$slug = trim( $request->get_param( 'slug' ) );
 
 		if ( ! $slug ) {
-			return new WP_Error( 'slug_not_provided', 'Valid slug not provided.' );
+			return new WP_Error( 'slug_not_provided', 'Valid slug not provided.', array( 'status' => 400 ) );
 		}
 
 		// Verify filesystem is accessible first.
@@ -252,7 +255,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 		$plugin_files = get_plugins( '/' . $slug );
 
 		if ( ! $plugin_files ) {
-			return new WP_Error( 'block_not_found', 'Valid slug not provided.' );
+			return new WP_Error( 'block_not_found', 'Valid slug not provided.', array( 'status' => 400 ) );
 		}
 
 		$plugin_files = array_keys( $plugin_files );
@@ -297,6 +300,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 		);
 
 		if ( is_wp_error( $response ) ) {
+			$response->add_data( array( 'status' => 500 ) );
 			return $response;
 		}
 
