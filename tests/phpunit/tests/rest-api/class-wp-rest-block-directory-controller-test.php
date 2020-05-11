@@ -5,7 +5,7 @@
  * @package Gutenberg
  * phpcs:disable
  */
-class WP_REST_Block_Directory_Controller_Test extends WP_UnitTestCase {
+class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 	protected $controller = null;
 
 	function setUp() {
