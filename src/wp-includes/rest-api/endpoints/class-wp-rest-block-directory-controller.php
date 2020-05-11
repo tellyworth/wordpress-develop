@@ -398,7 +398,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 	public function get_item_schema() {
 		$schema = array(
 			'$schema'    => 'http://json-schema.org/draft-04/schema#',
-			'title'      => 'block',
+			'title'      => 'block-directory-item',
 			'type'       => 'object',
 			'properties' => array(
 				'name'                => array(
