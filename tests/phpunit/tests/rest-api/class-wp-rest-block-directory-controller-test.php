@@ -79,7 +79,8 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 
 		$this->prevent_requests_to_host( 'api.wordpress.org' );
 
-		$response = @ rest_do_request( $request );
+		$this->expectException('PHPUnit_Framework_Error_Warning');
+		$response = rest_do_request( $request );
 		$this->assertErrorResponse( 'plugins_api_failed', $response, 500 );
 	}
 
@@ -94,7 +95,8 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 
 		$this->prevent_requests_to_host( 'api.wordpress.org' );
 
-		$response = @ rest_do_request( $request );
+		$this->expectException('PHPUnit_Framework_Error_Warning');
+		$response = rest_do_request( $request );
 		$this->assertErrorResponse( 'plugins_api_failed', $response, 500 );
 	}
 
