@@ -35,7 +35,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 		wp_set_current_user( self::$admin_id );
 
 		$request = new WP_REST_Request( 'POST', '/wp/v2/block-directory/install', [] );
-		$result = rest_get_server()->dispatch( $request );
+		$result = rest_do_request( $request );
 
 		$this->assertErrorResponse( 'rest_missing_callback_param', $result, 400 );
 	}
@@ -49,7 +49,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 		$request = new WP_REST_Request( 'GET', '/wp/v2/block-directory/search' );
 		$request->set_query_params( array( 'term' => 'foo' ) );
 
-		$result = rest_get_server()->dispatch( $request );
+		$result = rest_do_request( $request );
 		$this->assertNotWPError( $result );
 		$this->assertEquals( 200, $result->status );
 	}
@@ -79,7 +79,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 
 		$this->prevent_requests_to_host( 'api.wordpress.org' );
 
-		$response = @ rest_get_server()->dispatch( $request );
+		$response = @ rest_do_request( $request );
 		$this->assertErrorResponse( 'plugins_api_failed', $response, 500 );
 	}
 
@@ -94,7 +94,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 
 		$this->prevent_requests_to_host( 'api.wordpress.org' );
 
-		$response = @ rest_get_server()->dispatch( $request );
+		$response = @ rest_do_request( $request );
 		$this->assertErrorResponse( 'plugins_api_failed', $response, 500 );
 	}
 
@@ -104,7 +104,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 	function test_simple_search_no_perms() {
 		$request  = new WP_REST_Request( 'GET', '/wp/v2/block-directory/search' );
 		$request->set_query_params( array( 'term' => 'foo' ) );
-		$response = rest_get_server()->dispatch( $request );
+		$response = rest_do_request( $request );
 		$data     = $response->get_data();
 
 		$this->assertEquals( $data['code'], 'rest_user_cannot_view' );
@@ -119,7 +119,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 		// This will hit the live API. We're searching for `block` which should definitely return at least one result.
 		$request  = new WP_REST_Request( 'GET', '/wp/v2/block-directory/search' );
 		$request->set_query_params( array( 'term' => 'block' ) );
-		$response = rest_get_server()->dispatch( $request );
+		$response = rest_do_request( $request );
 		$data     = $response->get_data();
 
 		$this->assertEquals( 200, $response->status );
@@ -142,7 +142,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 	function test_simple_install_no_perms() {
 		$request  = new WP_REST_Request( 'POST', '/wp/v2/block-directory/install' );
 		$request->set_query_params( array( 'slug' => 'foo' ) );
-		$response = rest_get_server()->dispatch( $request );
+		$response = rest_do_request( $request );
 		$data     = $response->get_data();
 
 		$this->assertEquals( $data['code'], 'rest_user_cannot_view' );
@@ -157,7 +157,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 		// This will hit the live API. 
 		$request  = new WP_REST_Request( 'POST', '/wp/v2/block-directory/install' );
 		$request->set_query_params( array( 'slug' => 'alex-says-this-block-definitely-doesnt-exist' ) );
-		$response = rest_get_server()->dispatch( $request );
+		$response = rest_do_request( $request );
 
 		// Is this an appropriate status?
 		$this->assertErrorResponse( 'plugins_api_failed', $response, 500 );
@@ -171,7 +171,7 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 
 		$request  = new WP_REST_Request( 'OPTIONS', '/wp/v2/block-directory/search' );
 		$request->set_query_params( array( 'term' => 'foo' ) );
-		$response = rest_get_server()->dispatch( $request );
+		$response = rest_do_request( $request );
 		$data     = $response->get_data();
 
       	// Check endpoints
