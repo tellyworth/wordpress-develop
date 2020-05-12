@@ -137,6 +137,22 @@ class WP_REST_Block_Directory_Controller_Test extends WP_Test_REST_TestCase {
 	}
 
 	/**
+	 * A search with zero results should return a 200 response.
+	 */
+	function test_simple_search_no_results() {
+		wp_set_current_user( self::$admin_id );
+
+		$request  = new WP_REST_Request( 'GET', '/wp/v2/block-directory/search' );
+		$request->set_query_params( array( 'term' => '0c4549ee68f24eaaed46a49dc983ecde' ) );
+		$response = rest_do_request( $request );
+		$data     = $response->get_data();
+
+		// Should produce a 200 status with an empty array.
+		$this->assertEquals( 200, $response->status );
+		$this->assertEquals( array(), $data );
+	}
+
+	/**
 	 * Should fail with a permission error if requesting user is not logged in.
 	 */
 	function test_simple_install_no_perms() {
