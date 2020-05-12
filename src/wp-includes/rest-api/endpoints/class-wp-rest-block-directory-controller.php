@@ -386,8 +386,7 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 			$block[ 'assets' ][] = 'https://plugins.svn.wordpress.org/' . $plugin['slug'] . $asset;
 		}
 
-		$response = new WP_REST_Response();
-		$response->set_data( $block );
+		$response = new WP_REST_Response( $block );
 
 		return $response;
 	}
