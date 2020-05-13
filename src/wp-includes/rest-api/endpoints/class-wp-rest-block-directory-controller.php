@@ -501,7 +501,6 @@ class WP_REST_Block_Directory_Controller extends WP_REST_Controller {
 				'type' => 'string',
 			),
 			'required'          => true,
-			'sanitize_callback' => array( $this, 'sanitize_text_field' ),
 		);
 
 		/**
